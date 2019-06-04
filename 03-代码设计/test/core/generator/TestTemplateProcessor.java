@@ -1,7 +1,11 @@
 package core.generator;
 import core.common.*;
+
+
+
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
+import org.easymock.IMocksControl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,6 +14,7 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -64,14 +69,27 @@ public class TestTemplateProcessor implements DataSourceType{
 		//4. 录制该静态Mock的行为模式（针对的是静态方法）；
         //------------------------------------------------
         //以上流程请在这里实现：
-        //
-        //
-        // 这里写代码
-        //
+		//1. 使用EasyMock建立一个DataSourceConfig类的一个Mock对象实例；
+
+				IMocksControl control = EasyMock.createControl();
+				dsc=control.createMock(DataSourceConfig.class);
+				//2. 录制该实例的STUB模式和行为模式（针对的是非静态方法）；
+				EasyMock.expect(dsc.getConstDataSource().getDataHolder("sex").getValue()).andReturn("Female");
+				EasyMock.expect(dsc.getConstDataSource().getDataHolder("readme").getValue()).andReturn("5");
+				EasyMock.expect(dsc.getConstDataSource().getDataHolder("testexpr").getExpr()).andReturn("${num}+${readme}");
+				EasyMock.expect(dsc.getConstDataSource().getDataHolder("testexpr").getValue()).andReturn("5.0");
+				//3. 使用PowerMock建立DataSourceConfig类的静态Mock；
+				PowerMock.mockStatic(DataSourceConfig.class);
+		        //4. 录制该静态Mock的行为模式（针对的是静态方法）；
+				EasyMock.expect(DataSourceConfig.newInstance()).andReturn(dsc).anyTimes();
+		        // 这里写代码
+		        control.replay();
         //------------------------------------------------
 		//5. 重放所有的行为。
 		PowerMock.replayAll(dsc);
 		//初始化一个待测试类（SUT）的实例
 		tp = new TemplateProcessor();
 	}
+
+
 }
